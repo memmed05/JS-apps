@@ -44,9 +44,9 @@ class UI {
         `;
         row.insertAdjacentHTML('beforebegin', alert);
 
-        setTimeout(()=>{
+        setTimeout(() => {
             document.querySelector('.alert').remove();
-        },3000)
+        }, 3000)
     }
 }
 
