@@ -26,12 +26,43 @@ class UI {
         const instructor = document.getElementById('instructor').value = '';
         const image = document.getElementById('image').value = '';
     }
-    deleteCourse(element){
-        if(element.classList.contains('delete')){
+    deleteCourse(element) {
+        if (element.classList.contains('delete')) {
             element.parentElement.parentElement.remove();
         }
     }
+
+    showAlert(message, className) {
+        const row = document.querySelector('.row');
+        const alert = `
+            <div class="alert alert-${className}">
+            ${message}
+            </div>
+        `;
+        row.insertAdjacentHTML('beforebegin', alert);
+    }
 }
+
+class Storage{
+
+    static getCourse(){
+
+    }
+
+    static displayCourses(){
+
+    }
+
+    static addCourse(course){
+
+    }
+
+    static deleteCourseLS(){
+
+    }
+}
+
+document.addEventListener('DOMContentLoaded',Storage.displayCourses);
 
 document.getElementById('new-course').addEventListener('submit', e => {
 
@@ -42,13 +73,20 @@ document.getElementById('new-course').addEventListener('submit', e => {
     const course = new Course(title, instructor, image);
 
     const ui = new UI();
-    ui.addCourseToList(course);
-    ui.clearList();
-
+    if (title === '' || instructor === '' || image === '') {
+        ui.showAlert('Please compete the form', 'warning');
+    } else {
+        ui.addCourseToList(course);
+        ui.clearList();
+        Storage.addCourse();
+        ui.showAlert('Course has been added', 'success');
+    }
     e.preventDefault();
 })
 
-document.getElementById('course-list').addEventListener('click',e=>{
-    const ui=new UI();
+document.getElementById('course-list').addEventListener('click', e => {
+    const ui = new UI();
     ui.deleteCourse(e.target);
+    Storage.deleteCourse();
+    ui.showAlert('Course has been deleted', 'danger');
 });
