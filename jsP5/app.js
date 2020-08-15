@@ -1,5 +1,6 @@
 class Course {
     constructor(title, instructor, image) {
+        this.courseId = Math.floor(Math.random() * 1000000);
         this.title = title;
         this.instructor = instructor;
         this.image = image;
@@ -15,7 +16,7 @@ class UI {
                 <td><img src="img/${course.image}"></td>
                 <td>${course.title}</td>
                 <td>${course.instructor}</td>
-                <td><a href="#" class="btn btn-danger btn-sm delete">Delete</a></td>
+                <td><a href="#" data-id="${course.courseId}" class="btn btn-danger btn-sm delete">Delete</a></td>
             </tr>
         `;
         list.innerHTML += html;
@@ -29,7 +30,9 @@ class UI {
     deleteCourse(element) {
         if (element.classList.contains('delete')) {
             element.parentElement.parentElement.remove();
+            return true;
         }
+
     }
 
     showAlert(message, className) {
@@ -40,29 +43,54 @@ class UI {
             </div>
         `;
         row.insertAdjacentHTML('beforebegin', alert);
+
+        setTimeout(()=>{
+            document.querySelector('.alert').remove();
+        },3000)
     }
 }
 
-class Storage{
+class Storage {
 
-    static getCourse(){
+    static getCourses() {
+        let courses;
+        if (localStorage.getItem('courses') === null) {
+            courses = [];
+        } else {
+            courses = JSON.parse(localStorage.getItem('courses'));
+        }
 
+        return courses;
     }
 
-    static displayCourses(){
-
+    static displayCourses() {
+        const courses = Storage.getCourses();
+        courses.forEach(course => {
+            const ui = new UI();
+            ui.addCourseToList(course)
+        });
     }
 
-    static addCourse(course){
-
+    static addCourse(course) {
+        const courses = Storage.getCourses();
+        courses.push(course);
+        localStorage.setItem('courses', JSON.stringify(courses));
     }
 
-    static deleteCourseLS(){
-
+    static deleteCourseLS(element) {
+        if (element.classList.contains('delete')) {
+            const id = element.getAttribute('data-id');
+            const courses = Storage.getCourses();
+            courses.forEach((course, index) => {
+                if (course.courseId == id);
+                courses.splice(index, 1);
+            });
+            localStorage.setItem('courses', JSON.stringify(courses));
+        }
     }
 }
 
-document.addEventListener('DOMContentLoaded',Storage.displayCourses);
+document.addEventListener('DOMContentLoaded', Storage.displayCourses);
 
 document.getElementById('new-course').addEventListener('submit', e => {
 
@@ -70,15 +98,16 @@ document.getElementById('new-course').addEventListener('submit', e => {
     const instructor = document.getElementById('instructor').value;
     const image = document.getElementById('image').value;
 
-    const course = new Course(title, instructor, image);
+    const course = new Course(title, instructor, image, );
+
 
     const ui = new UI();
     if (title === '' || instructor === '' || image === '') {
         ui.showAlert('Please compete the form', 'warning');
     } else {
         ui.addCourseToList(course);
+        Storage.addCourse(course);
         ui.clearList();
-        Storage.addCourse();
         ui.showAlert('Course has been added', 'success');
     }
     e.preventDefault();
@@ -86,7 +115,8 @@ document.getElementById('new-course').addEventListener('submit', e => {
 
 document.getElementById('course-list').addEventListener('click', e => {
     const ui = new UI();
-    ui.deleteCourse(e.target);
-    Storage.deleteCourse();
-    ui.showAlert('Course has been deleted', 'danger');
+    if (ui.deleteCourse(e.target) == true) {
+        Storage.deleteCourseLS(e.target);
+        ui.showAlert('Course has been deleted', 'danger');
+    }
 });
